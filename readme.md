@@ -6,6 +6,7 @@ This is a file imposer for multi-up stickers for large format printers/cutters. 
 
 
 **Deliverables are:**
+
 *Needs*
 - [ ] Needs to be able to impose with PDFs in illustrator if given the following (Quantity needed, PDF width, PDF Height, spacing between, filePath)
 - [ ] Needs to loop through all PDF files in a folder
