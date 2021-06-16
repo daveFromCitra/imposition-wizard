@@ -35,13 +35,14 @@
 // Dave Blois, John(Sam) Fuchs
 // June 16 2021
 
-function saveThisThing(doc, dest) {
+function saveAndClose(doc, dest) {
   var saveName = new File(dest);
   saveOpts = new PDFSaveOptions();
   saveOpts.compatibility = PDFCompatibility.ACROBAT5;
   saveOpts.generateThumbnails = true;
   saveOpts.preserveEditability = true;
   doc.saveAs(saveName, saveOpts);
+  doc.close()
 }
 
 // This damn thing insists that we use points instead of inches or centimeters. Well. I'm not gonna do that.
@@ -65,13 +66,13 @@ function newFile(quantity, width, height, space, filePath, infoPath, dest) {
     thePDF.position = [xPosition, points(20)]
     xPosition = xPosition + points(width) + points(space);
   }
-  InfoCut(6, 6, 6, 6, doc)
-  saveThisThing(doc, dest);
+  saveAndClose(doc, dest);
 
 }
 
 function InfoCut(width, height, positionX, positionY, doc) {
   var accDoc = app.activeDocument;
+  var PerfCutSpot = accDoc.spots.getByName("PerfCutContour")
   var PerfCutSpot = accDoc.spots.add();
   var spotCMYK = new CMYKColor();
   spotCMYK.cyan = 100;
@@ -88,8 +89,7 @@ function InfoCut(width, height, positionX, positionY, doc) {
   newRect.strokeWidth = 0.25;
   newRect.strokeColor = PerfCutContour
   newRect.fillColor = NoColor;
-
 }
 
 
-newFile(20, 2.5, 0, 0.25, "/Users/grogtag/Downloads/fortyfour.pdf", "/Users/grogtag/Downloads/fortyfour.pdf", "/Users/grogtag/Desktop/NewTest.pdf")
+newFile(10, 4, 4, 0.25, "/Users/grogtag/Desktop/WizardScripts/TestFiles/TS_4x4 - Batch 12345-SoftTouchLamMatte Vinyl qty-10_PRINT.pdf", "/Users/grogtag/Desktop/WizardScripts/TestFiles/TS_4x4 - Batch 12345-SoftTouchLamMatte Vinyl qty-10_INFO.pdf", "/Users/grogtag/Desktop/WizardScripts/TestFiles/TS_4x4 - Batch 12345-SoftTouchLamMatte Vinyl qty-10_IMPO.pdf")
