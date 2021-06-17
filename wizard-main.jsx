@@ -52,18 +52,35 @@ function points(inches) {
 }
 
 function newFile(quantity, width, height, space, filePath, infoPath, dest) {
-  var filePath = File(filePath)
+  var printQuantity = quantity + 6;
+  var filePath = File(filePath);
+  var infoPath = File(infoPath);
+  var docWidth = points(50);
+  var docHeight = points(20);
   var doc = app.documents.add(
     DocumentColorSpace.CMYK,
-    points(50),
-    points(20),
+    docWidth,
+    docHeight,
     1
   );
-  var xPosition = 0;
+  var columns = Math.floor( docWidth / points(width) )
 
-  for (var i = 0; i < quantity; i++) {
-    var thePDF = doc.groupItems.createFromFile(filePath);
-    thePDF.position = [xPosition, points(20)]
+  var xPosition = 0;
+  var yPosition = docHeight;
+  for (var i = 0; i < printQuantity; i++) {
+    if (i == 0) {
+      var thePDF = doc.groupItems.createFromFile(infoPath);
+    }
+    else {
+      var thePDF = doc.groupItems.createFromFile(filePath);
+    }
+
+    if ( i % columns === 0 ) {
+      xPosition = 0;
+      yPosition = docHeight;
+    }
+
+    thePDF.position = [xPosition, yPosition]
     xPosition = xPosition + points(width) + points(space);
   }
   saveAndClose(doc, dest);
@@ -90,6 +107,5 @@ function InfoCut(width, height, positionX, positionY, doc) {
   newRect.strokeColor = PerfCutContour
   newRect.fillColor = NoColor;
 }
-
 
 newFile(10, 4, 4, 0.25, "/Users/grogtag/Desktop/WizardScripts/TestFiles/TS_4x4 - Batch 12345-SoftTouchLamMatte Vinyl qty-10_PRINT.pdf", "/Users/grogtag/Desktop/WizardScripts/TestFiles/TS_4x4 - Batch 12345-SoftTouchLamMatte Vinyl qty-10_INFO.pdf", "/Users/grogtag/Desktop/WizardScripts/TestFiles/TS_4x4 - Batch 12345-SoftTouchLamMatte Vinyl qty-10_IMPO.pdf")
