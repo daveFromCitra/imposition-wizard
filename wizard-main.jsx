@@ -38,11 +38,11 @@ var printFilePath = "/Users/grogtag/Desktop/WizardScripts/TestFiles-copy/TS_4x4 
 var infoFilePath = "/Users/grogtag/Desktop/WizardScripts/TestFiles-copy/TS_4x4 - Batch 12345-SoftTouchLamMatte Vinyl qty-10_INFO.pdf"
 var destination = "/Users/grogtag/Desktop/WizardScripts/TestFiles-copy/TS_4x4 - Batch 12345-SoftTouchLamMatte Vinyl qty-10_IMPO.pdf"
 var quantity = 50
-var space = ""
-var artWidth = ""
-var artHeight = ""
-var canvasWidth = ""
-var canvasHeight = ""
+var space = 0.25
+var artWidth = 4
+var artHeight = 4
+var canvasWidth = 50
+var canvasHeight = 25
 
 function saveAndClose(doc, dest) {
   var saveName = new File(dest);
@@ -60,12 +60,12 @@ function points(inches) {
   return inches * 72;
 }
 
-function newFile(quantity, width, height, space, filePath, infoPath, dest) {
+function newFile(quantity, width, height, space, canvasWidth, canvasHeight, filePath, infoPath, dest) {
   var printQuantity = quantity + 6;
   var filePath = File(filePath);
   var infoPath = File(infoPath);
-  var docWidth = points(50);
-  var docHeight = points(50);
+  var docWidth = points(canvasWidth);
+  var docHeight = points(canvasHeight);
   var doc = app.documents.add(
     DocumentColorSpace.CMYK,
     docWidth,
@@ -97,6 +97,7 @@ function newFile(quantity, width, height, space, filePath, infoPath, dest) {
 }
 
 function InfoCut(width, height, positionX, positionY, infoPath) {
+  var infoPath = File(infoPath);
   open(infoPath);
   var width = points(width) - points(0.2)
   var height = points(height) - points(0.2)
@@ -124,5 +125,5 @@ function InfoCut(width, height, positionX, positionY, infoPath) {
 }
 
 
-InfoCut(4, 4, 0, 4, infoPath)
-newFile(50, 4, 4, 0.25, "/Users/grogtag/Desktop/WizardScripts/TestFiles-copy/TS_4x4 - Batch 12345-SoftTouchLamMatte Vinyl qty-10_PRINT.pdf", "/Users/grogtag/Desktop/WizardScripts/TestFiles-copy/TS_4x4 - Batch 12345-SoftTouchLamMatte Vinyl qty-10_INFO.pdf", "/Users/grogtag/Desktop/WizardScripts/TestFiles-copy/TS_4x4 - Batch 12345-SoftTouchLamMatte Vinyl qty-10_IMPO.pdf")
+InfoCut(artWidth, artHeight, 0, artWidth, infoFilePath)
+newFile(quantity, artWidth, artHeight, space, canvasWidth, canvasHeight, printFilePath, infoFilePath, destination)
