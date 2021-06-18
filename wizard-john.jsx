@@ -34,7 +34,10 @@
 //
 // Dave Blois, John Sam Fuchs
 // June 16 2021
+//
+//
 
+//(just making some changes for git purposes no i'm not)
 // JSF 6/17/21 05:03PM PST
 // - Finished sheet now crops down to artwork bounds
 // - Added var "dimensions" for runtime access to artwork bounds
