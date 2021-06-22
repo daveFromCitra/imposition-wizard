@@ -45,9 +45,9 @@
 // - Created variables to use when implementing InfoTech data
 // - If/when we make a GUI for this, I'd love for most of the init variables to be changeable by the operator. Stuff like quantity, spacing, extra prints, etc should have some flexibility for changing workflows and media.
 
-var printFilePath = "/Users/grogtag/Desktop/WizardScripts/TestFiles-copy/TS_4x4 - Batch 12345-SoftTouchLamMatte Vinyl qty-10_PRINT.pdf"
-var infoFilePath = "/Users/grogtag/Desktop/WizardScripts/TestFiles-copy/TS_4x4 - Batch 12345-SoftTouchLamMatte Vinyl qty-10_INFO.pdf"
-var destination = "/Users/grogtag/Desktop/WizardScripts/TestFiles-copy/TS_4x4 - Batch 12345-SoftTouchLamMatte Vinyl qty-10_IMPO.pdf"
+var printFilePath = "C:/Users/jfuchs/Documents/JOHN/Scripts/John_ImpositionTesting/5x5_sticker1.pdf"
+var infoFilePath = "C:/Users/jfuchs/Documents/JOHN/Scripts/John_ImpositionTesting/5x5_ticket1.pdf"
+var destination = "C:/Users/jfuchs/Documents/JOHN/Scripts/John_ImpositionTesting/Output/"
 var quantity = 100
 var space = 0.125
 var maxDocHeight = 48
@@ -56,32 +56,83 @@ var extraPrints = 4
 var orderNumber = '12345' //placeholder
 var SKU = '67891' //placeholder
 var dimensions = {}
-
+var rows = 1
+var columns = 1
+var qtyPerSheet = quantity
+var RemainingPrintQTY = quantity
 
 function saveAndClose(doc, dest) {
-  var finalDestination = (dest + orderNumber + "_" + SKU + "_" + dimensions.artWidth + "x" + dimensions.artHeight + "_qty" + quantity + ".pdf") // Is there a cleaner way to do this?
-  var saveName = new File(finalDestination);
-  saveOpts = new PDFSaveOptions();
-  saveOpts.compatibility = PDFCompatibility.ACROBAT5;
-  saveOpts.generateThumbnails = true;
-  saveOpts.preserveEditability = true;
-  doc.saveAs(saveName, saveOpts);
-  doc.close()
-}
 
-// This damn thing insists that we use points instead of inches or centimeters. Well. I'm not gonna do that.
-// Hence, there's a little converter here.
+
+      var finalDestination = (dest + orderNumber + "_" + SKU + "_" + dimensions.artWidth + "x" + dimensions.artHeight + "_qty" + quantity + "_sheet" + sheetsNeeded + ".pdf") //Create detailed file name
+      sheetsNeeded = (sheetsNeeded - 1)
+      RemainingPrintQTY = (RemainingPrintQTY - qtyPerSheet)
+      var saveName = new File(finalDestination);
+      saveOpts = new PDFSaveOptions();
+      saveOpts.compatibility = PDFCompatibility.ACROBAT5;
+      saveOpts.generateThumbnails = true;
+      saveOpts.preserveEditability = true;
+      doc.saveAs(saveName, saveOpts);
+      // doc.close()
+     
+  }
+
+//   var finalDestination = (dest + orderNumber + "_" + SKU + "_" + dimensions.artWidth + "x" + dimensions.artHeight + "_qty" + quantity + ".pdf") //Create detailed file name
+//   var saveName = new File(finalDestination);
+//   saveOpts = new PDFSaveOptions();
+//   saveOpts.compatibility = PDFCompatibility.ACROBAT5;
+//   saveOpts.generateThumbnails = true;
+//   saveOpts.preserveEditability = true;
+//   doc.saveAs(saveName, saveOpts);
+//   doc.close()
+// }
+
+
+// Function to convert inches into points
 function points(inches) {
   return inches * 72;
 }
 
-function newFile(quantity, extraPrints, width, height, space, canvasWidth, canvasHeight, filePath, infoPath, dest) {
-  var printQuantity = quantity + extraPrints;
+function doTheMath(quantity, extraPrints, width, height, space, canvasWidth, filePath, infoPath) {
+
   var filePath = File(filePath);
-  var infoPath = File(infoPath);
+  open(filePath);
+  dimensions = {artWidth : (app.activeDocument.width / 72) , artHeight : (app.activeDocument.height / 72) } //keep 'dimensions' as inches for consistency
+  
+  var printQuantity = quantity + extraPrints;
+  var columns = Math.floor(points(canvasWidth) / (points(dimensions.artWidth) + points(space)));
+  rows = Math.floor(points(maxDocHeight) / points(dimensions.artHeight + space))
+  var docWidth = (columns * points(dimensions.artWidth + space));
+  var docHeight = Math.ceil(printQuantity / columns) * points(dimensions.artHeight + space);
+  qtyPerSheet = (rows * columns)
+  sheetsNeeded = Math.ceil(quantity / qtyPerSheet)
+  activeDocument.close();
+
+  // var filePath = File(printFilePath);
+  // var infoPath = File(infoFilePath);
+
+  return dimensions, sheetsNeeded, rows, docWidth, docHeight, columns, qtyPerSheet, filePath, infoPath
+  }
+
+function newFile(quantity, sheetCount, width, height, space, canvasWidth, filePath, infoPath, dest, columns, rows) {
+ 
+  var filePath = File(printFilePath);
+  var infoPath = File(infoFilePath);
+  var sheetCount = sheetsNeeded
+
+  for (var i = 0; i < sheetCount; i++) {
+    if (i == 0) {
+
+  var printQuantity = qtyPerSheet;
   var columns = Math.floor(points(canvasWidth) / (points(width) + points(space)));
-  var docHeight = Math.ceil(quantity / columns) * points(height + space);
   var docWidth = (columns * points(width + space))
+
+  if (printQuantity >= RemainingPrintQTY) {
+  var docHeight = (rows) * points(height + space);
+  }
+  else {
+    var docHeight = Math.ceil(columns / RemainingPrintQTY) * ((points(height) + points(space)))
+  }
 
   var doc = app.documents.add(
     DocumentColorSpace.CMYK,
@@ -90,28 +141,32 @@ function newFile(quantity, extraPrints, width, height, space, canvasWidth, canva
     1
   );
 
-
   var xPosition = 0;
   var yPosition = docHeight;
-  for (var i = 0; i < printQuantity; i++) {
-    if (i == 0) {
-      var thePDF = doc.groupItems.createFromFile(infoPath);
-    }
-    else {
-      var thePDF = doc.groupItems.createFromFile(filePath);
-    }
 
-    if ( i % columns === 0 && i !== 0 ) {
-      xPosition = 0;
-      yPosition = yPosition - ( points(height) + points(space) );
-    }
+    for (var i = 0; i < printQuantity; i++) {
+      if (i == 0) {
+        var thePDF = doc.groupItems.createFromFile(infoPath);
+      }
+      else {
+        var thePDF = doc.groupItems.createFromFile(filePath);
+      }
+      
+      if ( i % columns === 0 && i !== 0 ) {
+        xPosition = 0;
+        yPosition = yPosition - ( points(height) + points(space) );
+      }
 
-    thePDF.position = [xPosition, yPosition]
-    xPosition = xPosition + points(width) + points(space);
+      thePDF.position = [xPosition, yPosition]
+      xPosition = xPosition + points(width) + points(space);  
+    }
+      
+        saveAndClose(doc, dest);
+        newFile(qtyPerSheet, sheetCount, dimensions.artWidth, dimensions.artHeight, space, maxDocWidth, printFilePath, infoFilePath, destination, columns, rows) 
+      
+      }
+    }
   }
-  saveAndClose(doc, dest);
-
-}
 
 function InfoCut(width, height, positionX, positionY, infoPath) {
   var infoPath = File(infoPath);
@@ -122,34 +177,32 @@ function InfoCut(width, height, positionX, positionY, infoPath) {
   var positionY = points(positionY) - points(0.1)
 
   var accDoc = app.activeDocument;
-  var PerfCutSpot = accDoc.spots.add();
-  var spotCMYK = new CMYKColor();
-  spotCMYK.cyan = 100;
-  spotCMYK.magenta = 0;
-  spotCMYK.yellow = 100;
-  spotCMYK.black = 0;
-  PerfCutSpot.name = "PerfCutContour";
-  PerfCutSpot.colorType = ColorModel.SPOT;
-  PerfCutSpot.color = spotCMYK;
-  var PerfCutContour = new SpotColor();
-  PerfCutContour.spot = PerfCutSpot;
+  
+  if (app.activeDocument.spots[0].name == 'PerfCutContour' ) {
+    accDoc.spots[0].remove()
+  }
+
+    var PerfCutSpot = accDoc.spots.add();
+    var spotCMYK = new CMYKColor();
+    spotCMYK.cyan = 100;
+    spotCMYK.magenta = 0;
+    spotCMYK.yellow = 100;
+    spotCMYK.black = 0;
+    PerfCutSpot.name = "PerfCutContour";
+    PerfCutSpot.colorType = ColorModel.SPOT;
+    PerfCutSpot.color = spotCMYK;
+    var PerfCutContour = new SpotColor();
+    PerfCutContour.spot = PerfCutSpot;
+  
   var newRect = accDoc.pathItems.rectangle(positionY, positionX, width, height)
   newRect.stroked = true;
   newRect.strokeWidth = 0.25;
   newRect.strokeColor = PerfCutContour
   newRect.fillColor = NoColor;
   accDoc.close( SaveOptions.SAVECHANGES );
+
+  newFile(qtyPerSheet, sheetsNeeded, dimensions.artWidth, dimensions.artHeight, space, maxDocWidth, printFilePath, infoFilePath, destination, columns, rows)
 }
 
-// Initialize user-defined print file and get its data
-// Can later add to this to potentially grab order number, SKU, batch, etc from infoPath
-function InitFileVars(filePath, infoPath) {
-  var filePath = File(filePath);
-  open(filePath);
-  dimensions = {artWidth : (app.activeDocument.width / 72) , artHeight : (app.activeDocument.height / 72)} //keep 'dimensions' as inches for consistency
-  return dimensions
-}
-
-InitFileVars(printFilePath, infoFilePath)
+doTheMath(quantity, extraPrints, dimensions.artWidth, dimensions.artHeight, space, maxDocWidth, printFilePath, infoFilePath)
 InfoCut(dimensions.artWidth, dimensions.artHeight, 0, dimensions.artWidth, infoFilePath)
-newFile(quantity, extraPrints, dimensions.artWidth, dimensions.artHeight, space, maxDocWidth, maxDocHeight, printFilePath, infoFilePath, destination)
