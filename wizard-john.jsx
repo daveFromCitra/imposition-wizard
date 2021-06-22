@@ -45,16 +45,16 @@
 // - Created variables to use when implementing InfoTech data
 // - If/when we make a GUI for this, I'd love for most of the init variables to be changeable by the operator. Stuff like quantity, spacing, extra prints, etc should have some flexibility for changing workflows and media.
 
-var printFilePath = "C:/Users/jfuchs/Documents/JOHN/Scripts/John_ImpositionTesting/5x5_sticker1.pdf"
-var infoFilePath = "C:/Users/jfuchs/Documents/JOHN/Scripts/John_ImpositionTesting/5x5_ticket1.pdf"
+var printFilePath = "C:/Users/jfuchs/Documents/JOHN/Scripts/John_ImpositionTesting/4x4_sticker1.pdf"
+var infoFilePath = "C:/Users/jfuchs/Documents/JOHN/Scripts/John_ImpositionTesting/4x4_ticket1.pdf"
 var destination = "C:/Users/jfuchs/Documents/JOHN/Scripts/John_ImpositionTesting/Output/"
-var quantity = 100
+var quantity = 50
 var space = 0.125
 var maxDocHeight = 48
 var maxDocWidth = 50
-var extraPrints = 4
-var orderNumber = '12345' //placeholder
-var SKU = '67891' //placeholder
+var extraPrints = 5
+var orderNumber = '23300' //placeholder
+var SKU = '21424' //placeholder
 var dimensions = {}
 var rows = 1
 var columns = 1
@@ -66,14 +66,13 @@ function saveAndClose(doc, dest) {
 
       var finalDestination = (dest + orderNumber + "_" + SKU + "_" + dimensions.artWidth + "x" + dimensions.artHeight + "_qty" + quantity + "_sheet" + sheetsNeeded + ".pdf") //Create detailed file name
       sheetsNeeded = (sheetsNeeded - 1)
-      RemainingPrintQTY = (RemainingPrintQTY - qtyPerSheet)
       var saveName = new File(finalDestination);
       saveOpts = new PDFSaveOptions();
-      saveOpts.compatibility = PDFCompatibility.ACROBAT5;
-      saveOpts.generateThumbnails = true;
-      saveOpts.preserveEditability = true;
+      saveOpts.compatibility = PDFCompatibility.ACROBAT7;
+      saveOpts.generateThumbnails = false;
+      saveOpts.preserveEditability = false;
       doc.saveAs(saveName, saveOpts);
-      // doc.close()
+      doc.close()
      
   }
 
@@ -103,8 +102,11 @@ function doTheMath(quantity, extraPrints, width, height, space, canvasWidth, fil
   var columns = Math.floor(points(canvasWidth) / (points(dimensions.artWidth) + points(space)));
   rows = Math.floor(points(maxDocHeight) / points(dimensions.artHeight + space))
   var docWidth = (columns * points(dimensions.artWidth + space));
-  var docHeight = Math.ceil(printQuantity / columns) * points(dimensions.artHeight + space);
+  var docHeight = (printQuantity / columns) * points(dimensions.artHeight + space);
   qtyPerSheet = (rows * columns)
+  if (qtyPerSheet >= printQuantity) {
+    qtyPerSheet = printQuantity
+  }
   sheetsNeeded = Math.ceil(quantity / qtyPerSheet)
   activeDocument.close();
 
@@ -120,6 +122,8 @@ function newFile(quantity, sheetCount, width, height, space, canvasWidth, filePa
   var infoPath = File(infoFilePath);
   var sheetCount = sheetsNeeded
 
+
+// Loop for however many sheets we need
   for (var i = 0; i < sheetCount; i++) {
     if (i == 0) {
 
@@ -127,11 +131,11 @@ function newFile(quantity, sheetCount, width, height, space, canvasWidth, filePa
   var columns = Math.floor(points(canvasWidth) / (points(width) + points(space)));
   var docWidth = (columns * points(width + space))
 
-  if (printQuantity >= RemainingPrintQTY) {
+  if (sheetsNeeded > 1) {
   var docHeight = (rows) * points(height + space);
   }
   else {
-    var docHeight = Math.ceil(columns / RemainingPrintQTY) * ((points(height) + points(space)))
+    var docHeight = Math.ceil(RemainingPrintQTY / columns) * (points(height + space))
   }
 
   var doc = app.documents.add(
@@ -161,6 +165,7 @@ function newFile(quantity, sheetCount, width, height, space, canvasWidth, filePa
       xPosition = xPosition + points(width) + points(space);  
     }
       
+        RemainingPrintQTY = (RemainingPrintQTY - qtyPerSheet)
         saveAndClose(doc, dest);
         newFile(qtyPerSheet, sheetCount, dimensions.artWidth, dimensions.artHeight, space, maxDocWidth, printFilePath, infoFilePath, destination, columns, rows) 
       
@@ -204,5 +209,6 @@ function InfoCut(width, height, positionX, positionY, infoPath) {
   newFile(qtyPerSheet, sheetsNeeded, dimensions.artWidth, dimensions.artHeight, space, maxDocWidth, printFilePath, infoFilePath, destination, columns, rows)
 }
 
+
 doTheMath(quantity, extraPrints, dimensions.artWidth, dimensions.artHeight, space, maxDocWidth, printFilePath, infoFilePath)
-InfoCut(dimensions.artWidth, dimensions.artHeight, 0, dimensions.artWidth, infoFilePath)
+InfoCut(dimensions.artWidth, dimensions.artHeight, 0, dimensions.artHeight, infoFilePath)
