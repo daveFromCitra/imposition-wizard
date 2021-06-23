@@ -35,7 +35,7 @@
 // Dave Blois, John Sam Fuchs
 // June 16 2021
 //
-//
+//Testing Branch
 
 //(just making some changes for git purposes no i'm not)
 // JSF 6/17/21 05:03PM PST
@@ -90,7 +90,7 @@ var w = new Window("dialog", "Form");
                             infoFilePath = decodeURI(folderPath2.fsName);
                         }
                     }
-            
+
             var myInputGroup3 = w.add("group");
 
                 myInputGroup3.add("statictext",undefined,"Quantity: ")
@@ -108,7 +108,7 @@ var w = new Window("dialog", "Form");
                 spacingSelection.selection = 1;
                 space = spacingSelection.selection
 
-                
+
 
             var myInputGroup4 = w.add("group");
 
@@ -134,7 +134,7 @@ var w = new Window("dialog", "Form");
 
                 myButtonGroup.add("button",undefined,"Cancel");
             w.show();
-        
+
 function saveAndClose(doc, dest) {
 
 
@@ -147,7 +147,7 @@ function saveAndClose(doc, dest) {
       saveOpts.preserveEditability = false;
       doc.saveAs(saveName, saveOpts);
       doc.close()
-     
+
   }
 
 // Function to convert inches into points
@@ -160,7 +160,7 @@ function doTheMath(quantity, extraPrints, width, height, space, canvasWidth, fil
   var filePath = File(filePath);
   open(filePath);
   dimensions = {artWidth : (app.activeDocument.width / 72) , artHeight : (app.activeDocument.height / 72) } //keep 'dimensions' as inches for consistency
-  
+
   var printQuantity = quantity + extraPrints;
   var columns = Math.floor(points(canvasWidth) / (points(dimensions.artWidth) + points(space)));
   rows = Math.floor(points(maxDocHeight) / points(dimensions.artHeight + space))
@@ -178,7 +178,7 @@ function doTheMath(quantity, extraPrints, width, height, space, canvasWidth, fil
   }
 
 function newFile(quantity, sheetCount, width, height, space, canvasWidth, filePath, infoPath, dest, columns, rows) {
- 
+
   var filePath = File(printFilePath);
   var infoPath = File(infoFilePath);
   var sheetCount = sheetsNeeded
@@ -216,20 +216,20 @@ function newFile(quantity, sheetCount, width, height, space, canvasWidth, filePa
       else {
         var thePDF = doc.groupItems.createFromFile(filePath);
       }
-      
+
       if ( i % columns === 0 && i !== 0 ) {
         xPosition = 0;
         yPosition = yPosition - ( points(height) + points(space) );
       }
 
       thePDF.position = [xPosition, yPosition]
-      xPosition = xPosition + points(width) + points(space);  
+      xPosition = xPosition + points(width) + points(space);
     }
-      
+
         RemainingPrintQTY = (RemainingPrintQTY - qtyPerSheet)
         saveAndClose(doc, dest);
-        newFile(qtyPerSheet, sheetCount, dimensions.artWidth, dimensions.artHeight, space, maxDocWidth, printFilePath, infoFilePath, destination, columns, rows) 
-      
+        newFile(qtyPerSheet, sheetCount, dimensions.artWidth, dimensions.artHeight, space, maxDocWidth, printFilePath, infoFilePath, destination, columns, rows)
+
       }
     }
   }
@@ -243,7 +243,7 @@ function InfoCut(width, height, positionX, positionY, infoPath) {
   var positionY = points(positionY) - points(0.1)
 
   var accDoc = app.activeDocument;
-  
+
   if (app.activeDocument.spots[0].name == 'PerfCutContour' ) {
     accDoc.spots[0].remove()
   }
@@ -259,7 +259,7 @@ function InfoCut(width, height, positionX, positionY, infoPath) {
     PerfCutSpot.color = spotCMYK;
     var PerfCutContour = new SpotColor();
     PerfCutContour.spot = PerfCutSpot;
-  
+
   var newRect = accDoc.pathItems.rectangle(positionY, positionX, width, height)
   newRect.stroked = true;
   newRect.strokeWidth = 0.25;
