@@ -45,9 +45,10 @@
 // - Created variables to use when implementing InfoTech data
 // - If/when we make a GUI for this, I'd love for most of the init variables to be changeable by the operator. Stuff like quantity, spacing, extra prints, etc should have some flexibility for changing workflows and media.
 
-var printFilePath = "C:/Users/jfuchs/Documents/JOHN/Scripts/John_ImpositionTesting/4x4_sticker1.pdf"
-var infoFilePath = "C:/Users/jfuchs/Documents/JOHN/Scripts/John_ImpositionTesting/4x4_ticket1.pdf"
-var destination = "C:/Users/jfuchs/Documents/JOHN/Scripts/John_ImpositionTesting/Output/"
+var srcFolder = "/Users/grogtag/Desktop/WizardScripts/TestFiles-copy/"
+var printFilePath = "/Users/grogtag/Desktop/WizardScripts/TestFiles-copy/TS_4x4 - Batch 12345-SoftTouchLamMatte Vinyl qty-10_PRINT.pdf"
+var infoFilePath = "/Users/grogtag/Desktop/WizardScripts/TestFiles-copy/TS_4x4 - Batch 12345-SoftTouchLamMatte Vinyl qty-10_INFO.pdf"
+var destination = "/Users/grogtag/Desktop/WizardScripts/TestFiles-copy/TS_4x4 - Batch 12345-SoftTouchLamMatte Vinyl qty-10_IMPO.pdf"
 var quantity = 50
 var space = 0.125
 var maxDocHeight = 48
@@ -72,7 +73,7 @@ var w = new Window("dialog", "Form");
                 var browseButton = myInputGroup1.add("button",undefined,"Browse");
                     browseButton.onClick = function() {
                         // var folderPath = Folder.selectDialog("Select a folder to save the files");
-                        var folderPath = File.openDialog ("Select the print PDF");
+                        var folderPath = Folder.openDialog ("Select the print PDF");
                         if (folderPath) {
                             folderPathText.text = decodeURI(folderPath.fsName);
                             printFilePath = decodeURI(folderPath.fsName);
@@ -84,7 +85,7 @@ var w = new Window("dialog", "Form");
                     infoFileText.characters = 40;
                 var infoTechButton = myInputGroup2.add("button",undefined,"Browse");
                     infoTechButton.onClick = function() {
-                        var folderPath2 = File.openDialog ("Select the InfoTech PDF");
+                        var folderPath2 = Folder.openDialog ("Select the InfoTech PDF");
                         if (folderPath2) {
                             infoFileText.text = decodeURI(folderPath2.fsName);
                             infoFilePath = decodeURI(folderPath2.fsName);
