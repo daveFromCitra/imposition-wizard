@@ -70,20 +70,15 @@ function windowDisplay() {
 }
 
 function fileNameParser(filename) {
-  var BatchNumber = String(allInfoPDFs[i]).match(/Batch%20\d{5}/)
+
+  var BatchNumber = String(filename).match(/Batch%20\d{5}/)
   var BatchNumber = String(BatchNumber).match(/(.{0,5})$/g)
-  var width = String(allInfoPDFs[i]).match(/TS_{1}/)
+  var width = String(filename).match(/TS_{1}/)
   var width = String(width).match(/(.{0,1})$/g)
-  var height = String(allInfoPDFs[i]).match(/TS_{3}/)
+  var height = String(filename).match(/TS_{3}/)
   var height = String(height).match(/(.{0,1})$/g)
-  var quantity = String(allInfoPDFs[i]).match((/?<=qty-)(.*)(?=_)/))
-  var fileSpecs = {
-    BatchNumber: BatchNumber,
-    width: width,
-    height: height,
-    quantity: quantity
-  };
-  return fileSpecs;
+  var quantity = String(filename).match((/?<=qty-)(.*)(?=_)/))
+  alert( BatchNumber + " needs " )
 }
 
 function FolderLooper(srcFolder, destinationFolder, extraPrints, space) {
@@ -92,8 +87,7 @@ function FolderLooper(srcFolder, destinationFolder, extraPrints, space) {
   var allInfoPDFs = srcFolder.getFiles(/INFO\.pdf$/i);
 
   for (var i = 0; i < allInfoPDFs.length; i++) {
-    fileSpecs = fileNameParser(allInfoPDFs[i]);
-    alert( fileSpecs.BatchNumber + " needs " + fileSpecs.quantity )
+    fileNameParser(allInfoPDFs[i]);
   }
 
 }
