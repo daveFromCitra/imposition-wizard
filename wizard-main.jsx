@@ -46,9 +46,9 @@
 // - If/when we make a GUI for this, I'd love for most of the init variables to be changeable by the operator. Stuff like quantity, spacing, extra prints, etc should have some flexibility for changing workflows and media.
 
 var srcFolder = "/Users/grogtag/Desktop/WizardScripts/TestFiles-copy/"
-var printFilePath = "/Users/grogtag/Desktop/WizardScripts/TestFiles-copy/TS_4x4 - Batch 12345-SoftTouchLamMatte Vinyl qty-10_PRINT.pdf"
-var infoFilePath = "/Users/grogtag/Desktop/WizardScripts/TestFiles-copy/TS_4x4 - Batch 12345-SoftTouchLamMatte Vinyl qty-10_INFO.pdf"
-var destination = "/Users/grogtag/Desktop/WizardScripts/TestFiles-copy/TS_4x4 - Batch 12345-SoftTouchLamMatte Vinyl qty-10_IMPO.pdf"
+// var printFilePath = "/Users/grogtag/Desktop/WizardScripts/TestFiles-copy/TS_4x4 - Batch 12345-SoftTouchLamMatte Vinyl qty-10_PRINT.pdf"
+// var infoFilePath = "/Users/grogtag/Desktop/WizardScripts/TestFiles-copy/TS_4x4 - Batch 12345-SoftTouchLamMatte Vinyl qty-10_INFO.pdf"
+// var destination = "/Users/grogtag/Desktop/WizardScripts/TestFiles-copy/TS_4x4 - Batch 12345-SoftTouchLamMatte Vinyl qty-10_IMPO.pdf"
 var quantity = 50
 var space = 0.125
 var maxDocHeight = 48
@@ -62,94 +62,66 @@ var columns = 1
 var qtyPerSheet = quantity
 var RemainingPrintQTY = quantity
 
-var spacingOptions = ["0", "0.125", "0.25", "0.5"]
+function windowDisplay() {
+  var spacingOptions = ["0", "0.125", "0.25", "0.5"]
+  var w = new Window("dialog", "Form");
 
-var w = new Window("dialog", "Form");
-            var myInputGroup1 = w.add("group");
-                myInputGroup1.add("statictext", undefined, "Print File Path:");
-                var folderPathText = myInputGroup1.add("edittext",undefined,"Print file path");
-                    folderPathText.characters = 40;
-                    folderPathText.active = true;
-                var browseButton = myInputGroup1.add("button",undefined,"Browse");
-                    browseButton.onClick = function() {
-                        // var folderPath = Folder.selectDialog("Select a folder to save the files");
-                        var folderPath = File.openDialog ("Select the print PDF");
-                        if (folderPath) {
-                            folderPathText.text = decodeURI(folderPath.fsName);
-                            printFilePath = decodeURI(folderPath.fsName);
-                            }
-                    }
-            var myInputGroup2 = w.add("group");
-                myInputGroup2.add("statictext",undefined,"InfoTech Path: ")
-                    var infoFileText = myInputGroup2.add("edittext",undefined,"InfoTech file path");
-                    infoFileText.characters = 40;
-                var infoTechButton = myInputGroup2.add("button",undefined,"Browse");
-                    infoTechButton.onClick = function() {
-                        var folderPath2 = File.openDialog ("Select the InfoTech PDF");
-                        if (folderPath2) {
-                            infoFileText.text = decodeURI(folderPath2.fsName);
-                            infoFilePath = decodeURI(folderPath2.fsName);
-                        }
-                    }
+  var myInputGroupInfo = w.add("group");
 
-            var myInputGroup3 = w.add("group");
+  myInputGroupInfo.add("statictext", undefined, "Quantity: ")
+  var QuantityText = myInputGroupInfo.add("edittext", undefined, "50")
+  QuantityText.characters = 3;
+  quantity = QuantityText.text
 
-                myInputGroup3.add("statictext",undefined,"Quantity: ")
-                var QuantityText = myInputGroup3.add("edittext",undefined,"50")
-                    QuantityText.characters = 3;
-                    quantity = QuantityText.text
+  myInputGroupInfo.add("statictext", undefined, "Extra Stickers: ")
+  var extraStickersText = myInputGroupInfo.add("edittext", undefined, "5")
+  extraStickersText.characters = 3;
+  extraPrints = extraStickersText.text
 
-                myInputGroup3.add("statictext",undefined,"Extra Stickers: ")
-                var extraStickersText = myInputGroup3.add("edittext",undefined,"5")
-                    extraStickersText.characters = 3;
-                    extraPrints = extraStickersText.text
+  myInputGroupInfo.add("statictext", undefined, "Spacing: ")
+  var spacingSelection = myInputGroupInfo.add("dropdownlist", undefined, spacingOptions)
+  spacingSelection.selection = 1;
+  space = spacingSelection.selection
 
-                myInputGroup3.add("statictext",undefined,"Spacing: ")
-                var spacingSelection = myInputGroup3.add("dropdownlist",undefined,spacingOptions)
-                spacingSelection.selection = 1;
-                space = spacingSelection.selection
+  var myInputGroupDestination = w.add("group");
 
+  myInputGroupDestination.add("statictext", undefined, "Destination: ")
+  var destinationPath = myInputGroupDestination.add("edittext", undefined, "Destination path")
+  destinationPath.characters = 40;
+  destination = destinationPath.text
+  var destinationButton = myInputGroupDestination.add("button", undefined, "Browse")
+  destinationButton.onClick = function() {
+    var folderPath3 = Folder.selectDialog("Select the folder where you'd like your generated sheets to save")
+    if (folderPath3) {
+      destinationPath.text = decodeURI(folderPath3.fsName);
+      destination = destinationPath.text
+    }
+  }
 
+  var myButtonGroup = w.add("group");
+  myButtonGroup.alignment = "right";
+  var submitButton = myButtonGroup.add("button", undefined, "Submit");
+  submitButton.onClick = function() {
+    doTheMath(quantity, extraPrints, dimensions.artWidth, dimensions.artHeight, space, maxDocWidth, printFilePath, infoFilePath)
+  }
 
-            var myInputGroup4 = w.add("group");
-
-                myInputGroup4.add("statictext",undefined,"Destination: ")
-                var destinationPath = myInputGroup4.add("edittext",undefined,"Destination path")
-                destinationPath.characters = 40;
-                destination = destinationPath.text
-                var destinationButton = myInputGroup4.add("button",undefined,"Browse")
-                  destinationButton.onClick = function() {
-                    var folderPath3 = Folder.selectDialog ("Select the folder where you'd like your generated sheets to save")
-                    if (folderPath3) {
-                      destinationPath.text = decodeURI(folderPath3.fsName);
-                      destination = destinationPath.text
-                    }
-                  }
-
-            var myButtonGroup = w.add("group");
-                myButtonGroup.alignment = "right";
-                var submitButton = myButtonGroup.add("button",undefined,"Submit");
-                    submitButton.onClick = function() {
-                      doTheMath(quantity, extraPrints, dimensions.artWidth, dimensions.artHeight, space, maxDocWidth, printFilePath, infoFilePath)
-                    }
-
-                myButtonGroup.add("button",undefined,"Cancel");
-            w.show();
+  myButtonGroup.add("button", undefined, "Cancel");
+  w.show();
+}
 
 function saveAndClose(doc, dest) {
 
+  var finalDestination = (dest + orderNumber + "_" + SKU + "_" + dimensions.artWidth + "x" + dimensions.artHeight + "_qty" + quantity + "_sheet" + sheetsNeeded + ".pdf") //Create detailed file name
+  sheetsNeeded = (sheetsNeeded - 1)
+  var saveName = new File(finalDestination);
+  saveOpts = new PDFSaveOptions();
+  saveOpts.compatibility = PDFCompatibility.ACROBAT7;
+  saveOpts.generateThumbnails = false;
+  saveOpts.preserveEditability = false;
+  doc.saveAs(saveName, saveOpts);
+  doc.close()
 
-      var finalDestination = (dest + orderNumber + "_" + SKU + "_" + dimensions.artWidth + "x" + dimensions.artHeight + "_qty" + quantity + "_sheet" + sheetsNeeded + ".pdf") //Create detailed file name
-      sheetsNeeded = (sheetsNeeded - 1)
-      var saveName = new File(finalDestination);
-      saveOpts = new PDFSaveOptions();
-      saveOpts.compatibility = PDFCompatibility.ACROBAT7;
-      saveOpts.generateThumbnails = false;
-      saveOpts.preserveEditability = false;
-      doc.saveAs(saveName, saveOpts);
-      doc.close()
-
-  }
+}
 
 // Function to convert inches into points
 function points(inches) {
@@ -160,7 +132,10 @@ function doTheMath(quantity, extraPrints, width, height, space, canvasWidth, fil
 
   var filePath = File(filePath);
   open(filePath);
-  dimensions = {artWidth : (app.activeDocument.width / 72) , artHeight : (app.activeDocument.height / 72) } //keep 'dimensions' as inches for consistency
+  dimensions = {
+    artWidth: (app.activeDocument.width / 72),
+    artHeight: (app.activeDocument.height / 72)
+  } //keep 'dimensions' as inches for consistency
 
   var printQuantity = quantity + extraPrints;
   var columns = Math.floor(points(canvasWidth) / (points(dimensions.artWidth) + points(space)));
@@ -176,7 +151,7 @@ function doTheMath(quantity, extraPrints, width, height, space, canvasWidth, fil
 
   InfoCut(dimensions.artWidth, dimensions.artHeight, 0, dimensions.artHeight, infoFilePath)
 
-  }
+}
 
 function newFile(quantity, sheetCount, width, height, space, canvasWidth, filePath, infoPath, dest, columns, rows) {
 
@@ -185,55 +160,53 @@ function newFile(quantity, sheetCount, width, height, space, canvasWidth, filePa
   var sheetCount = sheetsNeeded
 
 
-// Loop for however many sheets we need
+  // Loop for however many sheets we need
   for (var i = 0; i < sheetCount; i++) {
     if (i == 0) {
 
-  var printQuantity = qtyPerSheet;
-  var columns = Math.floor(points(canvasWidth) / (points(width) + points(space)));
-  var docWidth = (columns * points(width + space))
+      var printQuantity = qtyPerSheet;
+      var columns = Math.floor(points(canvasWidth) / (points(width) + points(space)));
+      var docWidth = (columns * points(width + space))
 
-  if (sheetsNeeded > 1) {
-  var docHeight = (rows) * points(height + space);
-  }
-  else {
-    var docHeight = Math.ceil(RemainingPrintQTY / columns) * (points(height + space))
-  }
-
-  var doc = app.documents.add(
-    DocumentColorSpace.CMYK,
-    docWidth,
-    docHeight,
-    1
-  );
-
-  var xPosition = 0;
-  var yPosition = docHeight;
-
-    for (var i = 0; i < printQuantity; i++) {
-      if (i == 0) {
-        var thePDF = doc.groupItems.createFromFile(infoPath);
-      }
-      else {
-        var thePDF = doc.groupItems.createFromFile(filePath);
+      if (sheetsNeeded > 1) {
+        var docHeight = (rows) * points(height + space);
+      } else {
+        var docHeight = Math.ceil(RemainingPrintQTY / columns) * (points(height + space))
       }
 
-      if ( i % columns === 0 && i !== 0 ) {
-        xPosition = 0;
-        yPosition = yPosition - ( points(height) + points(space) );
+      var doc = app.documents.add(
+        DocumentColorSpace.CMYK,
+        docWidth,
+        docHeight,
+        1
+      );
+
+      var xPosition = 0;
+      var yPosition = docHeight;
+
+      for (var i = 0; i < printQuantity; i++) {
+        if (i == 0) {
+          var thePDF = doc.groupItems.createFromFile(infoPath);
+        } else {
+          var thePDF = doc.groupItems.createFromFile(filePath);
+        }
+
+        if (i % columns === 0 && i !== 0) {
+          xPosition = 0;
+          yPosition = yPosition - (points(height) + points(space));
+        }
+
+        thePDF.position = [xPosition, yPosition]
+        xPosition = xPosition + points(width) + points(space);
       }
 
-      thePDF.position = [xPosition, yPosition]
-      xPosition = xPosition + points(width) + points(space);
-    }
+      RemainingPrintQTY = (RemainingPrintQTY - qtyPerSheet)
+      saveAndClose(doc, dest);
+      newFile(qtyPerSheet, sheetCount, dimensions.artWidth, dimensions.artHeight, space, maxDocWidth, printFilePath, infoFilePath, destination, columns, rows)
 
-        RemainingPrintQTY = (RemainingPrintQTY - qtyPerSheet)
-        saveAndClose(doc, dest);
-        newFile(qtyPerSheet, sheetCount, dimensions.artWidth, dimensions.artHeight, space, maxDocWidth, printFilePath, infoFilePath, destination, columns, rows)
-
-      }
     }
   }
+}
 
 function InfoCut(width, height, positionX, positionY, infoPath) {
   var infoPath = File(infoPath);
@@ -245,32 +218,58 @@ function InfoCut(width, height, positionX, positionY, infoPath) {
 
   var accDoc = app.activeDocument;
 
-  if (app.activeDocument.spots[0].name == 'PerfCutContour' ) {
+  if (app.activeDocument.spots[0].name == 'PerfCutContour') {
     accDoc.spots[0].remove()
   }
 
-    var PerfCutSpot = accDoc.spots.add();
-    var spotCMYK = new CMYKColor();
-    spotCMYK.cyan = 100;
-    spotCMYK.magenta = 0;
-    spotCMYK.yellow = 100;
-    spotCMYK.black = 0;
-    PerfCutSpot.name = "PerfCutContour";
-    PerfCutSpot.colorType = ColorModel.SPOT;
-    PerfCutSpot.color = spotCMYK;
-    var PerfCutContour = new SpotColor();
-    PerfCutContour.spot = PerfCutSpot;
+  var PerfCutSpot = accDoc.spots.add();
+  var spotCMYK = new CMYKColor();
+  spotCMYK.cyan = 100;
+  spotCMYK.magenta = 0;
+  spotCMYK.yellow = 100;
+  spotCMYK.black = 0;
+  PerfCutSpot.name = "PerfCutContour";
+  PerfCutSpot.colorType = ColorModel.SPOT;
+  PerfCutSpot.color = spotCMYK;
+  var PerfCutContour = new SpotColor();
+  PerfCutContour.spot = PerfCutSpot;
 
   var newRect = accDoc.pathItems.rectangle(positionY, positionX, width, height)
   newRect.stroked = true;
   newRect.strokeWidth = 0.25;
   newRect.strokeColor = PerfCutContour
   newRect.fillColor = NoColor;
-  accDoc.close( SaveOptions.SAVECHANGES );
+  accDoc.close(SaveOptions.SAVECHANGES);
 
   newFile(qtyPerSheet, sheetsNeeded, dimensions.artWidth, dimensions.artHeight, space, maxDocWidth, printFilePath, infoFilePath, destination, columns, rows)
 }
 
+function FileNameParse() {}
+
+function FolderLooper(quantity, sheetCount, width, height, space, canvasWidth, columns, rows, srcFolder) {
+  var allPrintPDFs = srcFolder.getFiles(/PRINT\.pdf$/i);
+  var allInfoPDFs = srcFolder.getFiles(/INFO\.pdf$/i);
+
+  for (var i = 0; i < allInfoPDFs.length; i++) {
+    allInfoPDFs[i]
+
+  }
+
+}
+// srcFolder = Folder("/Users/grogtag/Desktop/WizardScripts/TestFiles-copy/")
+// var allPDFs = srcFolder.getFiles(/\.pdf$/i);
+// var allPrintPDFs = srcFolder.getFiles(/PRINT\.pdf$/i);
+// var allInfoPDFs = srcFolder.getFiles(/INFO\.pdf$/i);
+//
+// for (var i = 0; i < allPrintPDFs.length; i++) {
+//
+// }
+//
+// for (var i = 0; i < allInfoPDFs.length; i++) {
+//
+// }
 
 // doTheMath(quantity, extraPrints, dimensions.artWidth, dimensions.artHeight, space, maxDocWidth, printFilePath, infoFilePath)
 // InfoCut(dimensions.artWidth, dimensions.artHeight, 0, dimensions.artHeight, infoFilePath)
+
+windowDisplay();
