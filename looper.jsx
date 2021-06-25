@@ -89,7 +89,7 @@ function FolderLooper(srcFolder, destinationFolder, extraPrints, space) {
   for (var i = 0; i < allInfoPDFs.length; i++) {
     fileNameParser(allInfoPDFs[i]);
   }
-
+  return w.close();
 }
 
 windowDisplay();

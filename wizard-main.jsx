@@ -126,7 +126,7 @@ function InfoCut(width, height, positionX, positionY, infoPath) {
   newRect.fillColor = NoColor;
   accDoc.close( SaveOptions.SAVECHANGES );
 }
-console.log("Hi, I'm Dave");
+
 
 
 InfoCut(artWidth, artHeight, 0, artWidth, infoFilePath)
