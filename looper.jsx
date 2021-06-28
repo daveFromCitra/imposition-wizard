@@ -1,3 +1,8 @@
+//batch list for easy lookup
+var infoTechCache = {}
+var canvasWidth = 50
+var canvasHeight = 25
+
 
 function windowDisplay() {
   //Setting initial widnow variables
@@ -61,6 +66,7 @@ function windowDisplay() {
   var submitButton = myButtonGroup.add("button", undefined, "Submit");
   submitButton.onClick = function() {
     FolderLooper(source, extraPrints, space);
+    return w.close();
   }
 
   myButtonGroup.add("button", undefined, "Cancel");
@@ -72,19 +78,56 @@ function windowDisplay() {
 function saveAndClose(doc, dest) {
   var saveName = new File(dest);
   saveOpts = new PDFSaveOptions();
-  saveOpts.compatibility = PDFCompatibility.ACROBAT5;
-  saveOpts.generateThumbnails = true;
-  saveOpts.preserveEditability = true;
+  saveOpts.compatibility = PDFCompatibility.ACROBAT7;
+  saveOpts.generateThumbnails = false;
+  saveOpts.preserveEditability = false;
   doc.saveAs(saveName, saveOpts);
   doc.close();
+}
+
+function newFile(quantity, width, height, space, canvasWidth, canvasHeight, filePath, infoPath, dest, batch) {
+  var filePath = File(filePath);
+  var infoPath = File(infoPath);
+  var docWidth = points(canvasWidth);
+  var docHeight = points(canvasHeight);
+  var doc = app.documents.add(
+    DocumentColorSpace.CMYK,
+    docWidth,
+    docHeight,
+    1
+  );
+  var columns = Math.floor( docWidth / ( points(width) + points(space) ) )
+
+  var xPosition = 0;
+  var yPosition = docHeight;
+  for (var i = 0; i < quantity; i++) {
+    if (i == 0) {
+      var thePDF = doc.groupItems.createFromFile(infoPath);
+    }
+    else {
+      var thePDF = doc.groupItems.createFromFile(filePath);
+    }
+
+    if ( i % columns === 0 && i !== 0 ) {
+      xPosition = 0;
+      yPosition = yPosition - ( points(height) + points(space) );
+    }
+
+    thePDF.position = [xPosition, yPosition]
+    xPosition = xPosition + points(width) + points(space);
+  }
+
+  dest = dest + String(batch) + ".pdf";
+  saveAndClose(doc, dest);
 }
 
 function points(inches) {
   return inches * 72;
 }
 
-function InfoCut(width, height, positionX, positionY, infoPath) {
-  //FLAG - this is a repeat
+function InfoCut(width, height, positionX, positionY, infoPath, batch) {
+  // Adds the batch number to a list for easy look up later
+  infoTechCache[batch] =  infoPath;
   var infoPath = File(infoPath);
   open(infoPath);
   var width = points(width) - points(0.2)
@@ -110,6 +153,8 @@ function InfoCut(width, height, positionX, positionY, infoPath) {
   newRect.strokeColor = PerfCutContour
   newRect.fillColor = NoColor;
   accDoc.close( SaveOptions.SAVECHANGES );
+
+  return infoTechCache;
 }
 
 function fileNameParser(filename) {
@@ -146,8 +191,6 @@ function fileNameParser(filename) {
 
 }
 
-
-
 function FolderLooper(srcFolder, destinationFolder, extraPrints, space) {
   var csvOrder = srcFolder.getFiles(/\.csv$/i)
   var allPrintPDFs = srcFolder.getFiles(/PRINT\.pdf$/i);
@@ -156,17 +199,19 @@ function FolderLooper(srcFolder, destinationFolder, extraPrints, space) {
   //This runs infoCut on all infoTech files
   for (var i = 0; i < allInfoPDFs.length; i++) {
     var itemSpecs = fileNameParser(allInfoPDFs[i]);
-    InfoCut(itemSpecs.Width, itemSpecs.Height, 0, itemSpecs.Width, allInfoPDFs[i]);
+    InfoCut(itemSpecs.Width, itemSpecs.Height, 0, itemSpecs.Width, allInfoPDFs[i], itemSpecs.Batch);
   }
 
   //This loop will open all files
-  // for (var i = 0; i < allPrintPDFs.length; i++) {
-  //   var itemSpecs = fileNameParser(allPrintPDFs[i]);
-  //
-  // }
+  for (var i = 0; i < allPrintPDFs.length; i++) {
+    var itemSpecs = fileNameParser(allPrintPDFs[i]);
+    var printQuantity = itemSpecs.Quantity + parseInt(extraPrints);
+    var spaceBetween = parseInt(space)
+
+    newFile(printQuantity, itemSpecs.Width, itemSpecs.Height, spaceBetween, canvasWidth, canvasHeight, allPrintPDFs[i], infoTechCache[itemSpecs.Batch], destination, itemSpecs.Batch)
+
+  }
   return;
 }
-
-
 
 windowDisplay();
