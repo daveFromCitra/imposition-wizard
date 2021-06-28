@@ -117,7 +117,7 @@ function newFile(quantity, width, height, space, canvasWidth, canvasHeight, file
     xPosition = xPosition + points(width) + points(space);
   }
 
-  dest = dest + String(batch) + ".pdf";
+  dest = dest + "/" + String(batch) + ".pdf";
   saveAndClose(doc, dest);
 }
 
