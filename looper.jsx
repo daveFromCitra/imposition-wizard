@@ -61,6 +61,7 @@ function windowDisplay() {
   var submitButton = myButtonGroup.add("button", undefined, "Submit");
   submitButton.onClick = function() {
     FolderLooper(source, extraPrints, space);
+    // return w.close();
   }
 
   myButtonGroup.add("button", undefined, "Cancel");
@@ -89,7 +90,6 @@ function FolderLooper(srcFolder, destinationFolder, extraPrints, space) {
   for (var i = 0; i < allInfoPDFs.length; i++) {
     fileNameParser(allInfoPDFs[i]);
   }
-  return w.close();
 }
 
 windowDisplay();
