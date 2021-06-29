@@ -86,6 +86,7 @@ function saveAndClose(doc, dest) {
 }
 
 function newFile(quantity, width, height, space, canvasWidth, canvasHeight, filePath, infoPath, dest, batch) {
+
   var filePath = File(filePath);
   var infoPath = File(infoPath);
   var docWidth = points(canvasWidth);
