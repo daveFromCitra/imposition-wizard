@@ -2,11 +2,12 @@
 var infoTechCache = {}
 var canvasWidth = 50
 var canvasHeight = 25
-
+var maxDocHeight = 50
+var sheetsNeeded = 1
 
 function windowDisplay() {
   //Setting initial widnow variables
-  var spacingOptions = ["0", "0.125", "0.25", "0.5"]
+  var spacingOptions = [0, 0.125, 0.25, 0.5]
   var w = new Window("dialog", "Form");
 
   //Adding the Quantity, Extra and Spacing Info
@@ -26,6 +27,7 @@ function windowDisplay() {
   myInputGroupInfo.add("statictext", undefined, "Spacing: ")
   var spacingSelection = myInputGroupInfo.add("dropdownlist", undefined, spacingOptions)
   spacingSelection.selection = 1;
+  // space = parseFloat(spacingSelection.selection)
   space = spacingSelection.selection
 
   //Adding the Source Folder Path Input
@@ -65,7 +67,7 @@ function windowDisplay() {
   myButtonGroup.alignment = "right";
   var submitButton = myButtonGroup.add("button", undefined, "Submit");
   submitButton.onClick = function() {
-    FolderLooper(source, extraPrints, space);
+    FolderLooper(source, extraPrints, parseFloat(space.text));
     return w.close();
   }
 
@@ -85,29 +87,58 @@ function saveAndClose(doc, dest) {
   doc.close();
 }
 
-function newFile(quantity, width, height, space, canvasWidth, canvasHeight, filePath, infoPath, dest, batch) {
+function newFile(quantity, width, height, space, canvasWidth, canvasHeight, filePath, infoPath, dest, batch, columns, sheetCount, qtyPerSheet, rows) {
 
   var filePath = File(filePath);
   var infoPath = File(infoPath);
-  var docWidth = points(canvasWidth);
-  var docHeight = points(canvasHeight);
-  var doc = app.documents.add(
-    DocumentColorSpace.CMYK,
-    docWidth,
-    docHeight,
-    1
-  );
-  var columns = Math.floor( docWidth / ( points(width) + points(space) ) )
+  // var docWidth = points(canvasWidth);
+  // var docHeight = (quantity / columns) * points(height + space);
+  // var doc = app.documents.add(
+  //   DocumentColorSpace.CMYK,
+  //   docWidth,
+  //   docHeight,
+  //   1
+  // );
+
+
+// Loop for however many sheets we need
+for (var i = 0; i < sheetCount; i++) {
+  if (i == 0) {
+
+var RemainingPrintQTY = quantity;
+var columns = Math.floor(points(canvasWidth) / (points(width) + points(space)));
+var docWidth = (columns * points(width + space))
+
+if (sheetsNeeded > 1) {
+  var docHeight = (rows * points(height + space));
+  }
+  else {
+    if (sheetsNeeded == 0) {
+     return 
+     } 
+  var docHeight = points((Math.ceil((RemainingPrintQTY + 1) / columns) * (height + space)))
+}
+
+var doc = app.documents.add(
+  DocumentColorSpace.CMYK,
+  docWidth,
+  docHeight,
+  1
+);
 
   var xPosition = 0;
   var yPosition = docHeight;
-  for (var i = 0; i < quantity; i++) {
+  for (var i = 0; i < qtyPerSheet; i++) {
     if (i == 0) {
       var thePDF = doc.groupItems.createFromFile(infoPath);
     }
-    else {
+    else{
       var thePDF = doc.groupItems.createFromFile(filePath);
     }
+    // else {
+    //   app.copy();
+    //   var thePDF = app.paste();
+    // }
 
     if ( i % columns === 0 && i !== 0 ) {
       xPosition = 0;
@@ -117,9 +148,18 @@ function newFile(quantity, width, height, space, canvasWidth, canvasHeight, file
     thePDF.position = [xPosition, yPosition]
     xPosition = xPosition + points(width) + points(space);
   }
-
-  dest = dest + "/" + String(batch) + ".pdf";
+ 
+  RemainingPrintQTY = (RemainingPrintQTY - qtyPerSheet)
+  dest = dest + "/" + String(batch) + "_" + sheetsNeeded + ".pdf";
+  sheetsNeeded = (sheetsNeeded - 1)
   saveAndClose(doc, dest);
+
+  if (sheetsNeeded > 0) {
+    newFile(RemainingPrintQTY, width, height, space, canvasWidth, canvasHeight, filePath, infoPath, destination, batch, columns, sheetCount, qtyPerSheet, rows)
+  }
+
+    }
+  }
 }
 
 function points(inches) {
@@ -137,6 +177,12 @@ function InfoCut(width, height, positionX, positionY, infoPath, batch) {
   var positionY = points(positionY) - points(0.1)
 
   var accDoc = app.activeDocument;
+
+  // Remove spot color if already exists
+  if (app.activeDocument.spots[0].name == 'PerfCutContour' ) {
+    accDoc.spots[0].remove()
+  }
+
   var PerfCutSpot = accDoc.spots.add();
   var spotCMYK = new CMYKColor();
   spotCMYK.cyan = 100;
@@ -192,24 +238,35 @@ function fileNameParser(filename) {
 
 }
 
-function FolderLooper(srcFolder, destinationFolder, extraPrints, space) {
+function FolderLooper(srcFolder, extraPrints, space) {
   var csvOrder = srcFolder.getFiles(/\.csv$/i)
   var allPrintPDFs = srcFolder.getFiles(/PRINT\.pdf$/i);
-  var allInfoPDFs = srcFolder.getFiles(/INFO\.pdf$/i);
+  var allInfoPDFs = srcFolder.getFiles(/TICKET\.pdf$/i);
 
   //This runs infoCut on all infoTech files
   for (var i = 0; i < allInfoPDFs.length; i++) {
     var itemSpecs = fileNameParser(allInfoPDFs[i]);
-    InfoCut(itemSpecs.Width, itemSpecs.Height, 0, itemSpecs.Width, allInfoPDFs[i], itemSpecs.Batch);
+    InfoCut(itemSpecs.Width, itemSpecs.Height, 0, itemSpecs.Height, allInfoPDFs[i], itemSpecs.Batch);
   }
 
   //This loop will open all files
   for (var i = 0; i < allPrintPDFs.length; i++) {
     var itemSpecs = fileNameParser(allPrintPDFs[i]);
     var printQuantity = itemSpecs.Quantity + parseInt(extraPrints);
-    var spaceBetween = parseInt(space)
 
-    newFile(printQuantity, itemSpecs.Width, itemSpecs.Height, spaceBetween, canvasWidth, canvasHeight, allPrintPDFs[i], infoTechCache[itemSpecs.Batch], destination, itemSpecs.Batch)
+    // var rows = (points(maxDocHeight) / points(itemSpecs.Height + space))
+    var rows = Math.floor(maxDocHeight / (itemSpecs.Height + space))
+    // var columns = (canvasWidth / ( points(itemSpecs.Width) + points(space)))
+    var columns = Math.floor(canvasWidth / (itemSpecs.Width + space))
+
+    qtyPerSheet = (rows * columns)
+    if (qtyPerSheet >= printQuantity) {
+      qtyPerSheet = printQuantity
+    }
+    sheetsNeeded = Math.ceil(printQuantity / qtyPerSheet)
+    RemainingPrintQTY = printQuantity
+
+    newFile(printQuantity, itemSpecs.Width, itemSpecs.Height, space, canvasWidth, canvasHeight, allPrintPDFs[i], infoTechCache[itemSpecs.Batch], destination, itemSpecs.Batch, columns, sheetsNeeded, qtyPerSheet, rows)
 
   }
   return;
