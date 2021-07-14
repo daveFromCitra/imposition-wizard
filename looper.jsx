@@ -16,7 +16,7 @@ function windowDisplay() {
   // // Removed because it should pull this information from the Filename
   // myInputGroupInfo.add("statictext", undefined, "Quantity: ")
   // var QuantityText = myInputGroupInfo.add("edittext", undefined, "50")
-  // QuantityText.characters = 3;
+  // QuantityText.characters = 3;                  
   // quantity = QuantityText.text
 
   myInputGroupInfo.add("statictext", undefined, "Extra Stickers: ")
@@ -91,43 +91,36 @@ function newFile(quantity, width, height, space, canvasWidth, canvasHeight, file
 
   var filePath = File(filePath);
   var infoPath = File(infoPath);
-  // var docWidth = points(canvasWidth);
-  // var docHeight = (quantity / columns) * points(height + space);
-  // var doc = app.documents.add(
-  //   DocumentColorSpace.CMYK,
-  //   docWidth,
-  //   docHeight,
-  //   1
-  // );
-
 
 // Loop for however many sheets we need
 for (var i = 0; i < sheetCount; i++) {
   if (i == 0) {
 
-var RemainingPrintQTY = quantity;
-var columns = Math.floor(points(canvasWidth) / (points(width) + points(space)));
-var docWidth = (columns * points(width + space))
+    var RemainingPrintQTY = quantity;
+    var columns = Math.floor(points(canvasWidth) / (points(width) + points(space)));
+    var docWidth = (columns * points(width + space))
 
-if (sheetsNeeded > 1) {
-  var docHeight = (rows * points(height + space));
-  }
-  else {
-    if (sheetsNeeded == 0) {
-     return 
-     } 
-  var docHeight = points((Math.ceil((RemainingPrintQTY + 1) / columns) * (height + space)))
-}
+    if (sheetsNeeded > 1) {
+      var docHeight = (rows * points(height + space));
+      }
+    else {
+      if (sheetsNeeded == 0) {
+      return 
+      } 
+      // If this is the last sheet, crop the height to whatever is necessary
+      var docHeight = points((Math.ceil((RemainingPrintQTY + 1) / columns) * (height + space)))
+    }
 
-var doc = app.documents.add(
-  DocumentColorSpace.CMYK,
-  docWidth,
-  docHeight,
-  1
-);
+  var doc = app.documents.add(
+    DocumentColorSpace.CMYK,
+    docWidth,
+    docHeight,
+    1
+  );
 
   var xPosition = 0;
   var yPosition = docHeight;
+
   for (var i = 0; i < qtyPerSheet; i++) {
     if (i == 0) {
       var thePDF = doc.groupItems.createFromFile(infoPath);
@@ -150,8 +143,9 @@ var doc = app.documents.add(
   }
  
   RemainingPrintQTY = (RemainingPrintQTY - qtyPerSheet)
-  dest = dest + "/" + String(batch) + "_" + sheetsNeeded + ".pdf";
+  dest = dest + "/" + String(batch) + "_" + sheetIndex + ".pdf";
   sheetsNeeded = (sheetsNeeded - 1)
+  sheetIndex = (sheetIndex + 1)
   saveAndClose(doc, dest);
 
   if (sheetsNeeded > 0) {
